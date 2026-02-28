@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Demo / generated outputs
+demo_output/
+outputs/
+wandb/
+
+# Data (too large for git)
+/data/
+*.mp4
+*.avi
+*.mkv
+*.pt
+*.bin
+*.safetensors
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key

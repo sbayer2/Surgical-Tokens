@@ -1,0 +1,117 @@
+# ─── Video Segmentation ──────────────────────────────────────────
+segmentation:
+  clip_duration_sec: 120        # 2-minute clips
+  overlap_sec: 30               # 30-second overlap between clips
+  min_scene_duration_sec: 5     # PySceneDetect minimum scene length
+  scene_threshold: 27.0         # Content detector threshold
+  fps_sample: 2                 # FPS for scene detection pass (lower = faster)
+
+# ─── Quality Filter ──────────────────────────────────────────────
+quality_filter:
+  min_brightness: 30            # Minimum mean pixel brightness (0-255)
+  max_brightness: 240           # Maximum mean pixel brightness
+  min_entropy: 4.0              # Minimum frame entropy (bits)
+  min_action_ratio: 0.3         # Minimum fraction of frames with optical flow above threshold
+  flow_threshold: 2.0           # Optical flow magnitude threshold for "action"
+
+# ─── Video Encoder ───────────────────────────────────────────────
+video_encoder:
+  model_name: "MCG-NJU/videomae-base"
+  num_frames: 16                # Frames per forward pass
+  frame_size: 224
+  embedding_dim: 768            # VideoMAE base hidden size
+  batch_size: 8
+  use_lora: false
+  lora_rank: 16
+  lora_alpha: 32
+
+# ─── Sparse Encoder (VQ-VAE) ────────────────────────────────────
+sparse_encoder:
+  codebook_size: 2048           # Number of discrete clip tokens
+  embedding_dim: 768            # Must match video encoder output
+  commitment_cost: 0.25
+  decay: 0.99                   # EMA decay for codebook updates
+  num_quantizers: 1             # Residual quantization depth
+  training:
+    epochs: 50
+    batch_size: 256
+    lr: 3.0e-4
+    warmup_steps: 500
+
+# ─── Sequence Model ──────────────────────────────────────────────
+sequence_model:
+  architecture: "gpt2"          # gpt2 or llama
+  vocab_size: 2048              # Must match codebook_size
+  n_positions: 512              # Maximum procedure length in tokens
+  n_embd: 512
+  n_layer: 8
+  n_head: 8
+  dropout: 0.1
+  special_tokens:
+    bos: 0                      # Beginning of procedure
+    eos: 1                      # End of procedure
+    pad: 2
+  pretraining:
+    epochs: 100
+    batch_size: 32
+    lr: 5.0e-4
+    warmup_ratio: 0.05
+    weight_decay: 0.01
+    gradient_accumulation_steps: 4
+
+# ─── DPO Training ────────────────────────────────────────────────
+dpo:
+  beta: 0.1                     # DPO temperature — lower = stronger preference
+  loss_type: "sigmoid"          # sigmoid or hinge
+  label_smoothing: 0.0
+  training:
+    epochs: 3
+    batch_size: 16
+    lr: 1.0e-5
+    warmup_ratio: 0.1
+    gradient_accumulation_steps: 8
+    max_grad_norm: 1.0
+
+# ─── Outcome Labeling ───────────────────────────────────────────
+outcomes:
+  better_percentile: 30         # Top 30% = "better"
+  composite_weights:
+    operative_time: 0.3
+    blood_loss: 0.25
+    conversion: 0.25            # Binary: converted to open = 1.0 penalty
+    complications_30d: 0.2
+  normalize: true               # Z-score normalize before compositing
+
+# ─── Judge (Reasoning Model) ────────────────────────────────────
+judge:
+  provider: "anthropic"         # anthropic or openai
+  model: "claude-sonnet-4-20250514"
+  max_tokens: 1024
+  keyframes_per_clip: 3         # Key frames to extract per clip for judge input
+  temperature: 0.3
+  criteria:
+    - "anatomical_safety"
+    - "instrument_handling"
+    - "tissue_respect"
+    - "procedural_flow"
+    - "efficiency"
+
+# ─── Evaluation ──────────────────────────────────────────────────
+evaluation:
+  clustering:
+    n_clusters: [5, 8, 12]      # Test multiple k values
+    metrics: ["silhouette", "calinski_harabasz", "davies_bouldin"]
+  skill_correlation:
+    expert_rating_scale: [1, 5]  # OSATS-style 1-5 scale
+    metrics: ["spearman", "kendall"]
+
+# ─── Infrastructure ──────────────────────────────────────────────
+infra:
+  seed: 42
+  dtype: "bf16"                 # bf16, fp16, or fp32
+  num_workers: 8
+  pin_memory: true
+  output_dir: "./outputs"
+  logging:
+    wandb_project: "surgical-tokens"
+    log_every_n_steps: 50
