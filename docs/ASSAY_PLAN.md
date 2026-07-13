@@ -156,3 +156,41 @@ Peak storage ~90 GB (videos); everything downstream is megabytes. Total:
 - Surgeon-identity confound gate for DPO (outcome ~ PGY/volume): required
   before any preference optimization, specified in the project page at
   the ai-research vault (`wiki/surgical-tokens.md`).
+
+---
+
+## AMENDMENT 2026-07-13 (same day, pre-data): access reality + two temporal regimes
+
+Investigation of the CAMMA distribution channels (TF-Cholec80 repo, CAMMA
+datasets page, CholecT50 docs) before any download:
+
+**Access:** TF-Cholec80's scripted S3 download currently returns 403
+(gated). Current routes, both Google Forms (institutional email):
+- Cholec80 (full 25 fps videos + phase/tool labels):
+  https://docs.google.com/forms/d/1GwZFM3-GhEduBs1d5QzbfFksKmS1OqXZAz8keYi-wKI
+- CholecT50 (50 videos as 1 fps frames + ⟨instrument, verb, target⟩
+  triplets): https://forms.gle/GbMj8TwNoNpMUJuv9
+
+**License correction:** CC-BY-NC-SA 4.0 — non-commercial, share-alike
+redistribution IS permitted with citation (the original issue text said "no
+redistribution"; too strict). Videos still stay out of the repo as a size
+and courtesy matter.
+
+**Temporal-regime split (plan clarification, registered before data):** the
+frame-based releases are 1 fps, so the assay runs in two regimes with
+different claims:
+- **Coarse regime (1 fps — CholecT50 frames or Cholec80-at-1fps):** clips
+  are 16-frame ≈ 16 s windows. P1/P2 here measure *procedural* dynamics
+  (phase flow, tool events, triplet verbs) — NOT tissue mechanics. All
+  Stage-2/3/4 machinery applies unchanged.
+- **Fine regime (25 fps — Cholec80 video grant):** 16-frame ≈ 0.6–3 s clips
+  at native or lightly-strided rate; this is the *tissue-response* arm the
+  essence claim ultimately needs (deformation, tension, bleeding onset).
+- Registered expectation: P2's temporal-vs-single-frame delta is larger in
+  the fine regime than the coarse one. If the coarse regime shows NO delta,
+  that does not falsify the essence claim (1 fps may simply be below the
+  dynamics' Nyquist rate); only the fine regime can falsify it.
+
+G0 therefore splits: G0a = CholecT50 form (triplets, coarse regime); G0b =
+Cholec80 form (videos, fine regime). File both immediately; stages proceed
+with whichever grants first.
