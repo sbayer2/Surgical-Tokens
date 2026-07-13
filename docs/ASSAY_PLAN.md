@@ -231,3 +231,19 @@ this repository or its issues.
 
 Citation obligation: Nwoye et al., CholecTrack20 (CVPR 2025), in any
 publication arising.
+
+**Same-day update: G0b also GRANTED (CholecT50).** 50 videos, 1 fps frames,
+100 action triplets ⟨instrument, verb, target⟩ as binary presence labels +
+phase labels + component annotations. Official splits per Nwoye & Padoy
+(arXiv:2204.05235) adopted as published. Citations: Nwoye et al.,
+Rendezvous (Med. Image Anal. 2022) + the splits paper. Download credentials
+are personal and not recorded here. Regime coverage after this grant:
+**coarse regime fully unblocked with verb-level action ground truth**
+(CholecT50), fine regime available on CholecTrack20's official test set;
+only G0a (Cholec80 full 25 fps videos) remains outstanding, wanted for
+fine-regime scale-up.
+
+Execution order (registered): CholecT50 download + label-parse gate →
+G1 encoder smoke (VideoMAE + V-JEPA on MPS) → Stage 1 embeddings, coarse
+regime first; CholecTrack20 trajectory arm follows once its download path
+is confirmed.
