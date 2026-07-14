@@ -78,3 +78,52 @@ fine-regime run is the decisive follow-up.
 
 Reproduce: `scripts/extract_embeddings_stage1.py` → `scripts/stage2_response_prediction.py` → `scripts/b4_random_baseline.py --emb-dir ~/datasets/ct20_emb`.
 Artifacts: `~/datasets/ct20_emb/` (gitignored; embeddings + labels, no raw video).
+
+---
+
+## S2 — Fine regime (25 fps): future surgical state is strongly predictable from APPEARANCE, not motion; density is not the bottleneck
+
+*Run 2026-07-14 on the 8 test videos (25 fps lives only there; this spends
+reserved-set independence for the density question, distinct from final
+P-confirmation). 240 anchors (30/video), LOGO-CV, predicting the label 15 s
+ahead from three onset variants x {trained, random-B4} encoders. First-order
+trained-vs-random gains are robust at this n; second-order temporal deltas are
+noisy over 8 videos.*
+
+Predicting **bleeding 15 s in the future** (balanced accuracy):
+
+| variant | trained | random | learned |
+|---|---|---|---|
+| single-frame (B3) | **0.688** | 0.512 | **+0.176** |
+| sparse (16 s @ 1 fps) | 0.655 | 0.492 | +0.163 |
+| dense (0.6 s @ 25 fps) | 0.652 | 0.511 | +0.141 |
+
+**Findings:**
+1. **The representations ARE predictively useful (corrects S1's pessimism).**
+   Trained encoders predict 15-s-future bleeding/phase far above random
+   (learned +0.14…+0.18). S1's "null" was specifically about the temporal
+   *delta* (motion-over-frame); it did not isolate that appearance itself is
+   strongly predictive of the near future. The procedural grammar is visible
+   in a single frame.
+2. **The predictive power is APPEARANCE, not dynamics.** For trained encoders
+   single-frame ≥ both temporal variants (bleeding 0.688 > 0.655 ≈ 0.652).
+   Motion does not beat a clean frame.
+3. **Density is NOT the bottleneck — the Nyquist hypothesis is NOT supported.**
+   Even at full 25 fps, dense motion adds nothing over appearance (dense ≤
+   single-frame). "1 fps was too sparse to see dynamics" (the S1 next-step
+   guess) is wrong.
+4. **Sparse ≥ dense, weakly.** The 16 s window is never worse than the 0.6 s
+   burst and edges it on phase (+0.032). Faint support for the worn-stairs
+   direction (long span ≥ short burst), but both lose to single-frame, so it
+   is a hint, not a vindication — its real test is the horizon sweep.
+
+**Load-bearing caveat.** Embeddings are **mean-pooled** over space-time tokens,
+which weakens explicit motion representation (16 identical frames give a clean
+appearance vector; real frames add motion the pooling cannot cleanly expose).
+So "dynamics don't help" is entangled with "mean-pooling cannot show dynamics."
+This is precisely why the preregistered **horizon sweep** (`docs/HORIZON_SWEEP_PLAN.md`)
+— which trains a temporally-aware head to predict the future rather than
+pooling it away — is the correct test of whether learned long-horizon dynamics
+beat the (now strong) appearance baseline of 0.69.
+
+Reproduce: `scripts/fine_regime_check.py --data ~/datasets/cholectrack20 --out ~/datasets/ct20_fine`.
