@@ -52,15 +52,34 @@ def main() -> None:
     print("Authenticating user ...", flush=True)
     syn = synapseclient.login(email=email, authToken=auth_token)
 
-    print("Validating access key permission ...", flush=True)
-    resp = requests.post(
-        "https://synapse-response.onrender.com/validate_access",
-        json={"access_key": access_key, "synapse_id": syn.getUserProfile()["ownerId"]},
-        timeout=60,
-    )
-    if resp.status_code != 200:
-        sys.exit(f"Access validation failed ({resp.status_code}): {resp.text}")
-    entity_id = resp.json()["entity_id"]
+    # The validation endpoint is a free Render.com service that cold-starts:
+    # the first request often times out just WAKING the dyno, and a retry then
+    # hits a warm server. Retry with a generous timeout instead of failing.
+    user_id = syn.getUserProfile()["ownerId"]
+    payload = {"access_key": access_key, "synapse_id": user_id}
+    entity_id = None
+    for attempt in range(1, 6):
+        print(f"Validating access key permission (attempt {attempt}/5, "
+              "cold server may take a minute) ...", flush=True)
+        try:
+            resp = requests.post(
+                "https://synapse-response.onrender.com/validate_access",
+                json=payload, timeout=180,
+            )
+        except requests.exceptions.RequestException as e:
+            print(f"  network hiccup ({type(e).__name__}); retrying ...", flush=True)
+            continue
+        if resp.status_code == 200:
+            entity_id = resp.json()["entity_id"]
+            break
+        # A definitive rejection (bad key) should not be retried.
+        if 400 <= resp.status_code < 500 and resp.status_code != 429:
+            sys.exit(f"Access validation rejected ({resp.status_code}): {resp.text}")
+        print(f"  server returned {resp.status_code}; retrying ...", flush=True)
+    if entity_id is None:
+        sys.exit("Access validation did not succeed after 5 attempts. The CAMMA "
+                 "validation server (synapse-response.onrender.com) may be down; "
+                 "wait a few minutes and re-run.")
 
     print(f"Downloading {entity_id} -> {dest} ...", flush=True)
     synapseutils.syncFromSynapse(syn, entity=entity_id, path=dest)
