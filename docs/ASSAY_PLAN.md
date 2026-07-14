@@ -194,3 +194,56 @@ different claims:
 G0 therefore splits: G0a = CholecT50 form (triplets, coarse regime); G0b =
 Cholec80 form (videos, fine regime). File both immediately; stages proceed
 with whichever grants first.
+
+---
+
+## AMENDMENT 2026-07-13 (evening): G0c GRANTED — CholecTrack20
+
+CAMMA granted access to **CholecTrack20** (20 laparoscopic cholecystectomy
+videos; CVPR 2025 dataset): multi-class multi-tool **tracking trajectories**
+(visibility / intracorporeal movement / lifelong paths), surgical phases,
+scene visual-challenge labels, **surgeon-operator labels**, bleeding/smoke/
+adverse-event annotations. Annotations at 1 fps; **raw 25 fps video for the
+test set**. License CC-BY-NC-SA 4.0 + DUA (no re-identification; security
+care; research-only; publication code must be open — this repo already is).
+The access key is personal to the grantee's email and is NOT recorded in
+this repository or its issues.
+
+**Adaptations (registered before download):**
+
+- **New primary response target — tool-trajectory forecasting:** from a
+  clip-onset embedding, predict subsequent tool positions/paths (dense,
+  continuous dynamics label — the closest surgical analog to the parent
+  project's 21-dim behavior vector). Phase-transition and tool-event targets
+  remain as secondary.
+- **New consequence target:** bleeding/adverse-event occurrence within the
+  following window (Brier-scored — the F11 calibration lesson).
+- **P5 upgrade:** surgeon-operator labels make the identity confound
+  directly measurable: probes must beat operator-only covariates, and a
+  registered check regresses embedding-probe error on operator identity.
+- **Scale honesty:** n=20 videos ⇒ video-level splits are tighter; the
+  official CholecTrack20 splits are used as published; all results reported
+  with per-video spread. Cholec80/CholecT50 requests remain filed (G0a/G0b)
+  for scale-up and the triplet arm.
+- **Regime mapping:** train/val = coarse regime (1 fps annotations);
+  official test set = fine regime (25 fps raw video) — evaluation lands
+  exactly where the falsifying arm needs it.
+
+Citation obligation: Nwoye et al., CholecTrack20 (CVPR 2025), in any
+publication arising.
+
+**Same-day update: G0b also GRANTED (CholecT50).** 50 videos, 1 fps frames,
+100 action triplets ⟨instrument, verb, target⟩ as binary presence labels +
+phase labels + component annotations. Official splits per Nwoye & Padoy
+(arXiv:2204.05235) adopted as published. Citations: Nwoye et al.,
+Rendezvous (Med. Image Anal. 2022) + the splits paper. Download credentials
+are personal and not recorded here. Regime coverage after this grant:
+**coarse regime fully unblocked with verb-level action ground truth**
+(CholecT50), fine regime available on CholecTrack20's official test set;
+only G0a (Cholec80 full 25 fps videos) remains outstanding, wanted for
+fine-regime scale-up.
+
+Execution order (registered): CholecT50 download + label-parse gate →
+G1 encoder smoke (VideoMAE + V-JEPA on MPS) → Stage 1 embeddings, coarse
+regime first; CholecTrack20 trajectory arm follows once its download path
+is confirmed.

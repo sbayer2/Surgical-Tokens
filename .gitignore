@@ -39,3 +39,9 @@ Thumbs.db
 # Secrets
 .env
 *.key
+
+# Datasets (CC-BY-NC-SA, DUA: never redistribute the raw data via git)
+/datasets/
+cholectrack20/
+cholect50/
+*.mp4
