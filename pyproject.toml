@@ -10,7 +10,11 @@ requires-python = ">=3.10"
 dependencies = [
     "torch>=2.1",
     "torchvision>=0.16",
-    "transformers>=4.36",
+    # >=4.52 for V-JEPA2; <5.0 because the 5.x attention refactor drops the
+    # 2022 VideoMAE checkpoint's trained q/v attention biases (loads them as
+    # zero) — silently handicapping the E-recon encoder. Verified via the G1
+    # smoke (scripts/g1_encoder_smoke.py). Revisit when 5.x fixes the loader.
+    "transformers>=4.52,<5.0",
     "accelerate>=0.25",
     "trl>=0.7",
     "datasets>=2.16",
