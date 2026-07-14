@@ -127,3 +127,47 @@ pooling it away — is the correct test of whether learned long-horizon dynamics
 beat the (now strong) appearance baseline of 0.69.
 
 Reproduce: `scripts/fine_regime_check.py --data ~/datasets/cholectrack20 --out ~/datasets/ct20_fine`.
+
+---
+
+## S3 — Horizon sweep: underpowered NULL — the single-seed "interior peak" was seed-0 luck (F9→F10 again)
+
+*Run 2026-07-14. Latent-prediction head (2-layer context transformer, ~1.6 M
+params) trained per horizon H to predict the frozen V-JEPA2 embedding H ahead;
+context vector probed → future bleeding, LOGO-CV; learned gain = trained −
+random-init head. 0.5 fps grid (step 2 s), horizons {2,4,8,16,32 s}, 10 videos.*
+
+**Single-seed (seed 0) suggested H1:** learned gain +0.027/+0.038/+0.065/
++0.022/+0.025 — an interior peak at 8 s, which the script auto-classified as
+"H1 SUPPORTED." **Multi-seed (5 seeds) overturned it:**
+
+| H | learned gain (mean ± std) |
+|---|---|
+| 2 s | −0.002 ± 0.025 |
+| 4 s | −0.016 ± 0.043 |
+| 8 s | −0.006 ± 0.048 |
+| 16 s | −0.037 ± 0.041 |
+| 32 s | −0.028 ± 0.037 |
+
+Every mean is ≈ 0 or slightly negative; per-seed swings (0.15 range at H=8 s)
+dwarf every between-horizon difference. **Seed 0 was the most positive seed in
+every row** — the apparent 8 s peak was one lucky draw. Third instance this
+session of a naive single-seed positive corrected to null by the proper
+control (cf. F10 basins, S1 B4).
+
+**Verdict — H1 NOT supported by this experiment; NOT refuted either.** The
+experiment is underpowered to detect a horizon effect if one exists — the
+prereg's data-scale gate fired ("if it underpowers, report that, not a
+horizon curve"). Two causes: (1) the random-init head already scores ~0.60
+because the frozen embeddings carry strong appearance signal (S2), so the
+trainable head must add atop a strong baseline; (2) a ~0.04 candidate effect
+against ~0.04 seed noise is invisible at 10 videos.
+
+**What would actually test the worn-stairs hypothesis** (each a new
+preregistration): (a) scale to hundreds of videos (Cholec80/CholecT50); (b)
+fine-tune the ENCODER at each horizon, not a head on frozen features (the
+frozen appearance baseline is the ceiling here); (c) a temporally-structured
+readout instead of last-token pooling. The hypothesis remains live; only this
+underpowered test of it is closed.
+
+Reproduce: `scripts/build_1fps_sequence.py` → `scripts/horizon_sweep.py --seq-dir ~/datasets/ct20_seq --seeds 5`.
